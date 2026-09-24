@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - NONGKIS</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-stats { margin-bottom: 2rem; }
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
+            gap: 1rem; 
+            margin-bottom: 2rem; 
+        }
+        .stat-card { 
+            background: white; 
+            padding: 1.5rem; 
+            border-radius: 10px; 
+            text-align: center; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+            border-left: 4px solid #667eea; 
+        }
+        .stat-number { 
+            display: block; 
+            font-size: 2rem; 
+            font-weight: bold; 
+            color: #667eea; 
+            margin-bottom: 0.5rem; 
+        }
+        .stat-label { 
+            font-size: 0.9rem; 
+            color: #666; 
+            font-weight: 500; 
+        }
+        .admin-actions { margin-bottom: 2rem; }
+        .action-buttons { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 1rem; 
+        }
+        .action-button { 
+            background: white; 
+            border: 2px solid #e9ecef; 
+            padding: 1.5rem; 
+            border-radius: 10px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 0.5rem; 
+        }
+        .action-button:hover { 
+            border-color: #667eea; 
+            transform: translateY(-5px); 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); 
+        }
+        .bookings-management { margin: 2rem 0; }
+        .bookings-filters { 
+            display: flex; 
+            gap: 0.5rem; 
+            margin-bottom: 1.5rem; 
+            flex-wrap: wrap; 
+        }
+        .filter-btn { 
+            padding: 8px 16px; 
+            border: 2px solid #e9ecef; 
+            background: white; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            font-size: 0.9rem; 
+        }
+        .filter-btn.active, .filter-btn:hover { 
+            background: #667eea; 
+            color: white; 
+            border-color: #667eea; 
+        }
+        .booking-card { 
+            background: white; 
+            border: 1px solid #e9ecef; 
+            border-radius: 10px; 
+            padding: 1.5rem; 
+            margin-bottom: 1rem; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        }
+        .booking-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 1rem; 
+            padding-bottom: 1rem; 
+            border-bottom: 1px solid #e9ecef; 
+        }
+        .booking-status { 
+            padding: 5px 12px; 
+            border-radius: 15px; 
+            font-size: 0.8rem; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+        }
+        .booking-status.pending { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .booking-status.confirmed { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .booking-status.cancelled { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .booking-actions { 
+            display: flex; 
+            gap: 10px; 
+            flex-wrap: wrap; 
+            margin-top: 1rem; 
+        }
+        .booking-actions button { 
+            padding: 8px 16px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 0.8rem; 
+            font-weight: 600; 
+            transition: all 0.3s ease; 
+        }
+        .btn-confirm { background: #28a745; color: white; }
+        .btn-cancel { background: #dc3545; color: white; }
+        .btn-delete { background: #6c757d; color: white; }
+        .no-data { text-align: center; padding: 3rem; color: #666; font-size: 1.1rem; }
+        .loading { text-align: center; padding: 2rem; color: #666; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="nav-brand">
+                <h2>🏖️ NONGKIS ADMIN</h2>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Beranda</a>
+                <a href="dashboard.html" class="nav-link">Dashboard User</a>
+                <a href="#" class="nav-link" onclick="logout()">Logout</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="dashboard-container">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>Selamat Datang, <span id="adminName">Admin</span>! 👑</h1>
+                <p>Panel Administrasi NONGKIS</p>
+            </div>
+
+            <div class="admin-stats">
+                <h3>📊 Statistik Sistem</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalUsers">0</span>
+                        <span class="stat-label">Total Users</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalPlaces">0</span>
+                        <span class="stat-label">Tempat Nongkrong</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="totalBookings">0</span>
+                        <span class="stat-label">Total Booking</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="pendingBookings">0</span>
+                        <span class="stat-label">Pending</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-actions">
+                <h3>⚡ Aksi Cepat</h3>
+                <div class="action-buttons">
+                    <button class="action-button" onclick="loadAdminData()">
+                        <span>🔄</span>
+                        <span>Refresh Data</span>
+                    </button>
+                    <button class="action-button" onclick="showAllBookings()">
+                        <span>📋</span>
+                        <span>Semua Booking</span>
+                    </button>
+                    <button class="action-button" onclick="showPendingBookings()">
+                        <span>⏳</span>
+                        <span>Booking Pending</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bookings-management">
+                <h3>📋 Management Bookings</h3>
+                <div class="bookings-filters">
+                    <button class="filter-btn active" onclick="filterBookings('all')">Semua</button>
+                    <button class="filter-btn" onclick="filterBookings('pending')">Pending</button>
+                    <button class="filter-btn" onclick="filterBookings('confirmed')">Confirmed</button>
+                    <button class="filter-btn" onclick="filterBookings('cancelled')">Cancelled</button>
+                </div>
+                <div class="bookings-list" id="bookingsList">
+                    <div class="loading">Memuat data booking...</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Simple notification function
+        function showNotification(message, type = 'info') {
+            alert((type === 'error' ? '❌ ' : '✅ ') + message);
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('nongkis_user');
+            alert('👋 Logout berhasil!');
+            window.location.href = 'index.html';
+        }
+
+        // Load admin data
+        async function loadAdminData() {
+            console.log('🔄 Loading admin data...');
+            const bookingsList = document.getElementById('bookingsList');
+            bookingsList.innerHTML = '<div class="loading">Memuat data booking...</div>';
+            
+            try {
+                // Load bookings
+                const response = await fetch('php/get_booking.php');
+                const bookings = await response.json();
+                
+                console.log('📊 Bookings data:', bookings);
+                
+                if (bookings.error) {
+                    bookingsList.innerHTML = '<div class="no-data">Error: ' + bookings.error + '</div>';
+                    return;
+                }
+                
+                if (!bookings || bookings.length === 0) {
+                    bookingsList.innerHTML = '<div class="no-data">Belum ada booking</div>';
+                    updateStats(0, 0);
+                    return;
+                }
+                
+                // Display bookings
+                bookingsList.innerHTML = '';
+                bookings.forEach(booking => {
+                    const bookingCard = document.createElement('div');
+                    bookingCard.className = `booking-card booking-${booking.status}`;
+                    
+                    bookingCard.innerHTML = `
+                        <div class="booking-header">
+                            <h4>${booking.place_name}</h4>
+                            <span class="booking-status ${booking.status}">${getStatusText(booking.status)}</span>
+                        </div>
+                        <div class="booking-info">
+                            <p><strong>User:</strong> ${booking.user_name} ${booking.user_email ? '(' + booking.user_email + ')' : ''}</p>
+                            <p><strong>Alamat:</strong> ${booking.place_address}</p>
+                            <p><strong>Tanggal:</strong> ${booking.booking_date} ${booking.booking_time}</p>
+                            <p><strong>Jumlah Orang:</strong> ${booking.jumlah_orang}</p>
+                            ${booking.catatan ? `<p><strong>Catatan:</strong> ${booking.catatan}</p>` : ''}
+                            <p><strong>Dibooking:</strong> ${new Date(booking.created_at).toLocaleString('id-ID')}</p>
+                        </div>
+                        <div class="booking-actions">
+                            ${booking.status === 'pending' ? `
+                                <button onclick="confirmBooking(${booking.id})" class="btn-confirm">✅ Konfirmasi</button>
+                                <button onclick="cancelBooking(${booking.id})" class="btn-cancel">❌ Tolak</button>
+                            ` : ''}
+                            <button onclick="deleteBooking(${booking.id})" class="btn-delete">🗑️ Hapus</button>
+                        </div>
+                    `;
+                    
+                    bookingsList.appendChild(bookingCard);
+                });
+                
+                // Update stats
+                updateStats(bookings.length, bookings.filter(b => b.status === 'pending').length);
+                showNotification('Data berhasil dimuat!');
+                
+            } catch (error) {
+                console.error('❌ Error loading admin data:', error);
+                bookingsList.innerHTML = '<div class="no-data">Error: ' + error.message + '</div>';
+                showNotification('Gagal memuat data: ' + error.message, 'error');
+            }
+        }
+
+        function updateStats(totalBookings, pendingBookings) {
+            document.getElementById('totalBookings').textContent = totalBookings;
+            document.getElementById('pendingBookings').textContent = pendingBookings;
+            document.getElementById('totalUsers').textContent = '2'; // admin + user
+            document.getElementById('totalPlaces').textContent = '8'; // dari data.js
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': 'Menunggu',
+                'confirmed': 'Dikonfirmasi', 
+                'cancelled': 'Dibatalkan'
+            };
+            return statusMap[status] || status;
+        }
+
+        async function confirmBooking(bookingId) {
+            await updateBookingStatus(bookingId, 'confirmed');
+        }
+
+        async function cancelBooking(bookingId) {
+            await updateBookingStatus(bookingId, 'cancelled');
+        }
+
+        async function updateBookingStatus(bookingId, status) {
+            try {
+                const response = await fetch('php/update_booking.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        booking_id: bookingId,
+                        status: status,
+                        action: 'update'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Booking berhasil diupdate!');
+                    loadAdminData(); // Reload data
+                } else {
+                    showNotification('Gagal update: ' + result.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error updating booking:', error);
+                showNotification('Terjadi kesalahan', 'error');
+            }
+        }
+
+        async function deleteBooking(bookingId) {
+            if (!confirm('Yakin ingin menghapus booking ini?')) return;
+            
+            try {
+                const response = await fetch('php/update_booking.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        booking_id: bookingId,
+                        action: 'delete'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showNotification('Booking berhasil dihapus!');
+                    loadAdminData(); // Reload data
+                } else {
+                    showNotification('Gagal hapus: ' + result.message, 'error');
+                }
+                
+            } catch (error) {
+                console.error('Error deleting booking:', error);
+                showNotification('Terjadi kesalahan', 'error');
+            }
+        }
+
+        function showAllBookings() {
+            filterBookings('all');
+            showNotification('Menampilkan semua booking');
+        }
+
+        function showPendingBookings() {
+            filterBookings('pending');
+            showNotification('Menampilkan booking pending');
+        }
+
+        function filterBookings(status) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            const bookings = document.querySelectorAll('.booking-card');
+            bookings.forEach(booking => {
+                if (status === 'all') {
+                    booking.style.display = 'block';
+                } else {
+                    booking.style.display = booking.classList.contains(`booking-${status}`) ? 'block' : 'none';
+                }
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = JSON.parse(localStorage.getItem('nongkis_user') || '{}');
+            
+            if (!currentUser || currentUser.role !== 'admin') {
+                alert('❌ Akses ditolak! Hanya untuk admin.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('adminName').textContent = currentUser.username;
+            loadAdminData();
+        });
+    </script>
+</body>
+</html>
